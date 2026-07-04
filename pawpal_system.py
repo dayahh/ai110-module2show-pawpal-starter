@@ -3,7 +3,7 @@
 Backend classes for the PawPal+ pet care app. This module defines the core
 data objects (Pet, PetTask) and the scheduling logic (TaskSchedule, DailyPlan).
 
-Skeleton generated from diagrams/draft_uml.mmd — method bodies are stubs.
+Skeleton generated from diagrams/draft_uml.mmd.
 """
 
 import uuid
@@ -21,10 +21,33 @@ class PetTask:
     priority: int
     duration_minutes: int
     completed: bool = False
+    frequency: str = "once"          # "once", "daily", or "weekly"
+    due_date: date | None = None
 
     def mark_complete(self) -> None:
         """Mark this task as done."""
         self.completed = True
+
+    def create_next_occurrence(self) -> "PetTask | None":
+        """Build a fresh (incomplete) task for this task's next occurrence.
+
+        Returns None for a one-time task or one with no due_date. For a
+        recurring task, advances the due date with timedelta: +1 day for
+        "daily", +1 week for "weekly".
+        """
+        if self.due_date is None or self.frequency not in ("daily", "weekly"):
+            return None
+
+        step = timedelta(days=1) if self.frequency == "daily" else timedelta(weeks=1)
+        return PetTask(
+            task_id=str(uuid.uuid4()),
+            pet_id=self.pet_id,
+            description=self.description,
+            priority=self.priority,
+            duration_minutes=self.duration_minutes,
+            frequency=self.frequency,
+            due_date=self.due_date + step,
+        )
 
 
 @dataclass
@@ -52,7 +75,25 @@ class Pet:
         """Return all tasks associated with this pet."""
         return self.tasks
 
-    def add_task(self, description: str, priority: int, duration_minutes: int) -> PetTask:
+    def filter_tasks(self, completed: bool | None = None) -> list[PetTask]:
+        """Return this pet's tasks, optionally filtered by completion status.
+
+        completed=True  -> only completed tasks
+        completed=False -> only pending tasks
+        completed=None  -> all tasks (the default)
+        """
+        if completed is None:
+            return list(self.tasks)
+        return [task for task in self.tasks if task.completed == completed]
+
+    def add_task(
+        self,
+        description: str,
+        priority: int,
+        duration_minutes: int,
+        frequency: str = "once",
+        due_date: date | None = None,
+    ) -> PetTask:
         """Create a task for this pet and add it to the collection."""
         task = PetTask(
             task_id=str(uuid.uuid4()),
@@ -60,9 +101,28 @@ class Pet:
             description=description,
             priority=priority,
             duration_minutes=duration_minutes,
+            frequency=frequency,
+            due_date=due_date,
         )
         self.tasks.append(task)
         return task
+
+    def complete_task(self, task_id: str) -> "PetTask | None":
+        """Mark one of this pet's tasks complete, spawning its next occurrence.
+
+        Finds the task by id and marks it done. If it's a recurring task
+        (daily/weekly), a new task for the next occurrence is created and
+        added to this pet's collection. Returns the new task, or None if the
+        task doesn't recur. Raises ValueError if the task_id isn't found.
+        """
+        for task in self.tasks:
+            if task.task_id == task_id:
+                task.mark_complete()
+                next_task = task.create_next_occurrence()
+                if next_task is not None:
+                    self.tasks.append(next_task)
+                return next_task
+        raise ValueError(f"No task with id {task_id}")
 
     def edit_task(self, task_id: str, updates: dict) -> PetTask:
         """Update fields on one of this pet's tasks, found by task_id.
@@ -98,21 +158,38 @@ class TaskSchedule:
         # Each entry is (task, start, end) so we can check for overlaps.
         self.tasks: list[tuple[PetTask, datetime, datetime]] = []
 
-    def add_task_to_schedule(self, task: PetTask, start_time: time) -> bool:
+    def add_task_to_schedule(self, task: PetTask, start_time: time) -> str | None:
         """Place a task at start_time on this schedule's day.
 
-        Uses the task's duration_minutes to compute its end time and rejects
-        the task (returns False) if it overlaps one that's already scheduled.
-        Returns True when the task is placed successfully.
+        Uses the task's duration_minutes to compute its end time. If it would
+        overlap a task already scheduled, the task is NOT placed and a warning
+        message is returned instead of crashing. Returns None when the task is
+        placed with no conflict.
         """
         start = datetime.combine(self.date, start_time)
         end = start + timedelta(minutes=task.duration_minutes)
-        for _scheduled, other_start, other_end in self.tasks:
+        for scheduled_task, other_start, other_end in self.tasks:
             # Two intervals overlap when each starts before the other ends.
             if start < other_end and other_start < end:
-                return False
+                return (
+                    f"Conflict: '{task.description}' "
+                    f"({start.strftime('%H:%M')}-{end.strftime('%H:%M')}) conflicts with "
+                    f"'{scheduled_task.description}' "
+                    f"({other_start.strftime('%H:%M')}-{other_end.strftime('%H:%M')})"
+                )
         self.tasks.append((task, start, end))
-        return True
+        return None
+
+    def sort_by_time(self) -> list[tuple[PetTask, datetime, datetime]]:
+        """Sort the scheduled tasks by their start time (earliest first).
+
+        Sorts on the start time formatted as an "HH:MM" string. Zero-padded
+        24-hour times sort the same lexically as chronologically, so a plain
+        string comparison gives the correct order. Sorts in place and also
+        returns the list.
+        """
+        self.tasks.sort(key=lambda entry: entry[1].strftime("%H:%M"))
+        return self.tasks
 
 
 class DailyPlan:

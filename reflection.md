@@ -50,6 +50,10 @@ Design did change during implementation. Initially, I thought I needed an overal
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
 
+The algo I reviewed was "create_next_occurrence"
+
+The readability could be better because it is a lot of logic and a lot of lines for one simple method. Even I noticed a lot of the changes the AI wanted to add by creating several helper methods. We could have went with the helper method part but I didn't want to keep refactoring so early onn in this project. But so far there is no performance issue.
+
 ---
 
 ## 3. AI Collaboration
