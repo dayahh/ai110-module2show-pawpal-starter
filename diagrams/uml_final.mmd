@@ -1,0 +1,50 @@
+classDiagram
+    class PetTask {
+        +str task_id
+        +str pet_id
+        +str description
+        +int priority
+        +int duration_minutes
+        +bool completed
+        +str frequency
+        +date due_date
+        +mark_complete() None
+        +create_next_occurrence() PetTask
+    }
+
+    class Pet {
+        +str pet_id
+        +str name
+        +str species
+        +int age
+        +List~PetTask~ tasks
+        +int task_count
+        +add_pet(name, species, age) Pet
+        +get_tasks() List~PetTask~
+        +filter_tasks(completed) List~PetTask~
+        +add_task(description, priority, duration_minutes, frequency, due_date) PetTask
+        +complete_task(task_id) PetTask
+        +edit_task(task_id, updates) PetTask
+        +delete_task(task_id) bool
+    }
+
+    class TaskSchedule {
+        +str schedule_id
+        +date date
+        +List~tuple~ tasks
+        +add_task_to_schedule(task, start_time) str
+        +sort_by_time() List~tuple~
+    }
+
+    class DailyPlan {
+        +str plan_id
+        +date date
+        +List~PetTask~ ordered_tasks
+        +recommend_schedule(tasks, day_start) TaskSchedule
+    }
+
+    Pet "1" o-- "*" PetTask : owns
+    PetTask ..> PetTask : spawns next occurrence
+    TaskSchedule "1" o-- "*" PetTask : schedules
+    DailyPlan ..> PetTask : orders
+    DailyPlan ..> TaskSchedule : produces
