@@ -20,11 +20,22 @@ Task Schedule Class # scheduling tasks
 Daily Plan Class # care plan reccomendation
 - methods: reccomendation of schedule
 
+New refined classes:
+
+Pet class # to track pet name and info
+- methods: add pet, get tasks
+Pet Task class # pet specific tasks
+- methods: add task, edit task, delete task
+Task Schedule class # scheduling tasks
+- methods: add task to schedule
+Daily Plan class # care plan recommendation
+- methods: recommend schedule
+
 **b. Design changes**
 
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
-
+Design did change during implementation. Initially, I thought I needed an overall user class in order to define pets and then pet tasks. But I reread the prompt and it says only one user needs this software so I decided that removing the user class will make things clearer. More clarity came when I first gave my original classes to Claude and it looked very tricky and messy to follow, due to the methods it generated for me I believed it would be better to cut out the User class as a middleman, and it did agree with my assesment because it reduces the work being done.
 ---
 
 ## 2. Scheduling Logic and Tradeoffs
