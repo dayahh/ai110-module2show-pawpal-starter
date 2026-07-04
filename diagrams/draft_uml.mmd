@@ -1,0 +1,39 @@
+classDiagram
+    class Pet {
+        +String petId
+        +String name
+        +String species
+        +int age
+        +addPet(name, species, age) Pet
+        +getTasks() List~PetTask~
+    }
+
+    class PetTask {
+        +String taskId
+        +String petId
+        +String description
+        +int priority
+        +int durationMinutes
+        +addTask(petId, description, priority) PetTask
+        +editTask(taskId, updates) PetTask
+        +deleteTask(taskId) bool
+    }
+
+    class TaskSchedule {
+        +String scheduleId
+        +Date date
+        +List~PetTask~ tasks
+        +addTaskToSchedule(task, timeSlot) bool
+    }
+
+    class DailyPlan {
+        +String planId
+        +Date date
+        +List~PetTask~ orderedTasks
+        +recommendSchedule(tasks) TaskSchedule
+    }
+
+    Pet "1" --> "*" PetTask : has
+    TaskSchedule "1" --> "*" PetTask : contains
+    DailyPlan --> TaskSchedule : produces
+    Pet "1" --> "*" DailyPlan : receives

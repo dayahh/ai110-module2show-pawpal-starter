@@ -7,6 +7,19 @@
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
 
+User should be able to add themselves and a pet
+User should be able to add a task and edit that task
+User should be able to consider task priority
+
+User Info class #to track name and info
+- methods: add user, add pet
+Pet Task class # pet specific tasks
+- methods: add task, edit task, delete task
+Task Schedule Class # scheduling tasks
+- methods: add task to schedule
+Daily Plan Class # care plan reccomendation
+- methods: reccomendation of schedule
+
 **b. Design changes**
 
 - Did your design change during implementation?
