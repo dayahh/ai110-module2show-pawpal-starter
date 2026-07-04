@@ -73,11 +73,29 @@ pytest
 pytest --cov
 ```
 
-Sample test output:
+To run tests: python -m pytest
+Confidence level: 4
 
+Sample test output:
+platform win32 -- Python 3.13.1, pytest-9.0.3, pluggy-1.6.0
+rootdir: C:\Users\ohday\Desktop\CodePath\AI-Class2026\ai110-module2show-pawpal-starter
+plugins: anyio-4.13.0
+collected 8 items                                                                                                                                                  
+
+tests\test_pawpal.py ........                                                                                                                                [100%]
+
+======================================================================== 8 passed in 0.04s ========================================================================
 ```
 # Paste your pytest output here
 ```
+platform win32 -- Python 3.13.1, pytest-9.0.3, pluggy-1.6.0
+rootdir: C:\Users\ohday\Desktop\CodePath\AI-Class2026\ai110-module2show-pawpal-starter
+plugins: anyio-4.13.0
+collected 8 items                                                                                                                                                  
+
+tests\test_pawpal.py ........                                                                                                                                [100%]
+
+======================================================================== 8 passed in 0.04s ========================================================================
 
 ## 📐 Smarter Scheduling
 
